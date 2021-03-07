@@ -1,6 +1,7 @@
 import { graphql } from "msw";
 
 const github = graphql.link("https://api.github.com/graphql");
+
 export const handlers = [
   github.query("Repository", (req, res, ctx) => {
     const { repository, owner } = req.variables;
@@ -13,8 +14,8 @@ export const handlers = [
             description:
               "Seamless REST/GraphQL API mocking library for browser and Node.js.",
             stargazerCount: 5124,
-            id: "MDEwOlJlcG9zaXRvcnkxNTczOTc1ODM"
-          }
+            id: "MDEwOlJlcG9zaXRvcnkxNTczOTc1ODM",
+          },
         })
       );
     } else if (repository === "react" && owner === "facebook") {
@@ -26,8 +27,8 @@ export const handlers = [
             description:
               "A declarative, efficient, and flexible JavaScript library for building user interfaces.",
             stargazerCount: 164614,
-            id: "MDEwOlJlcG9zaXRvcnkxMDI3MDI1MA=="
-          }
+            id: "MDEwOlJlcG9zaXRvcnkxMDI3MDI1MA==",
+          },
         })
       );
     }
@@ -39,35 +40,41 @@ export const handlers = [
           forkCount: 0,
           description: "Not available",
           stargazerCount: 0,
-          id: 0
-        }
+          id: 0,
+        },
       })
     );
   }),
-  github.mutation("AddStar", ({ variables: { starrableId } }, res, ctx) => {
+  github.mutation("AddStar", (req, res, ctx) => {
     return res(
       ctx.data({
         addStar: {
-          id: starrableId,
+          id: req.variables.input.starrableId,
           starrable: {
             stargazerCount:
-              starrableId === "MDEwOlJlcG9zaXRvcnkxNTczOTc1ODM" ? 5125 : 164615
-          }
-        }
+              req.variables.input.starrableId ===
+              "MDEwOlJlcG9zaXRvcnkxNTczOTc1ODM"
+                ? 5125
+                : 164615,
+          },
+        },
       })
     );
   }),
-  github.mutation("RemoveStar", ({ variables: { starrableId } }, res, ctx) => {
+  github.mutation("RemoveStar", (req, res, ctx) => {
     return res(
       ctx.data({
         removeStar: {
-          id: starrableId,
+          id: req.variables.input.starrableId,
           starrable: {
             stargazerCount:
-              starrableId === "MDEwOlJlcG9zaXRvcnkxNTczOTc1ODM" ? 5124 : 164614
-          }
-        }
+              req.variables.input.starrableId ===
+              "MDEwOlJlcG9zaXRvcnkxNTczOTc1ODM"
+                ? 5124
+                : 164614,
+          },
+        },
       })
     );
-  })
+  }),
 ];

@@ -1,15 +1,18 @@
 import { render } from "react-dom";
-import React, { StrictMode } from "react";
+import { StrictMode } from "react";
 import { ApolloProvider } from "@apollo/client";
 import App from "./App";
 import { client } from "./ApolloClient";
-const renderApp = () => {
-  if (process.env.NODE_ENV === "development") {
-    console.log(process.env.NODE_ENV);
-    const { worker } = require("./mocks/browser");
-    worker.start();
-  }
 
+function prepareWorker() {
+  if (process.env.NODE_ENV === "development") {
+    const { worker } = require("./test-utils/browser");
+    return worker.start();
+  }
+  return Promise.resolve();
+}
+
+const renderApp = () => {
   const rootElement = document.getElementById("root");
   render(
     <StrictMode>
@@ -20,4 +23,5 @@ const renderApp = () => {
     rootElement
   );
 };
-renderApp();
+
+prepareWorker().then(() => renderApp());

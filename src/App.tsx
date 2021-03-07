@@ -25,44 +25,57 @@ const GET_REPOSITORY_DETAILS = gql`
   }
 `;
 
+enum CACHE_POLICY {
+  CACHE_FIRST = "cache-first",
+  NETWORK_ONLY = "network-only",
+}
+
 export default function App() {
   const [selectedRepository, setSelectedRepository] = useState<{
     repository: string | null;
     owner: string | null;
   }>({
     repository: "react",
-    owner: "facebook"
+    owner: "facebook",
   });
 
-  const { data, loading } = useQuery<IRepository>(GET_REPOSITORY_DETAILS, {
+  const queryProps = {
     variables: {
       repository: selectedRepository.repository,
-      owner: selectedRepository.owner
+      owner: selectedRepository.owner,
     },
-    fetchPolicy: "network-only"
-  });
+    /** Sets cache policy to "network-only" for the test environment, if not apply the default cache policy which is "cache-first" */
+    fetchPolicy:
+      process.env.NODE_ENV === "test"
+        ? CACHE_POLICY.NETWORK_ONLY
+        : CACHE_POLICY.CACHE_FIRST,
+  };
+
+  const { data, loading } = useQuery<IRepository>(
+    GET_REPOSITORY_DETAILS,
+    queryProps
+  );
 
   const onRepositoryChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
     const { value } = target;
     if (value === "react") {
       setSelectedRepository({
         repository: "react",
-        owner: "facebook"
+        owner: "facebook",
       });
     } else if (value === "msw") {
       setSelectedRepository({
         repository: "msw",
-        owner: "mswjs"
+        owner: "mswjs",
       });
     } else {
       setSelectedRepository({
         repository: "buggy",
-        owner: "buggy"
+        owner: "buggy",
       });
     }
   };
 
-  console.log(data, loading);
   return (
     <div className={styles.App}>
       <p> Choose a repository </p>

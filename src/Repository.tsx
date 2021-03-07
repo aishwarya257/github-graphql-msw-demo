@@ -1,14 +1,12 @@
 import { useMutation, gql } from "@apollo/client";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
 
-interface IStar {
-  clientMutationId: string;
-  starrableId: string;
-}
-
-interface IAddStarOutput {
-  addStar: IStarOutput;
+interface IStarVariables {
+  input: {
+    clientMutationId: string;
+    starrableId: string;
+  };
 }
 
 interface IStarOutput {
@@ -16,6 +14,10 @@ interface IStarOutput {
     id: string;
     stargazerCount: number;
   };
+}
+
+interface IAddStarOutput {
+  addStar: IStarOutput;
 }
 
 interface IRemoveStarOutput {
@@ -50,33 +52,46 @@ export const Repository: FC<{
   stargazerCount: number;
   id: string;
 }> = ({ nameWithOwner, description, stargazerCount, id }) => {
-  const [addStar] = useMutation<IAddStarOutput, IStar>(ADD_STAR);
-  const [removeStar] = useMutation<IRemoveStarOutput, IStar>(REMOVE_STAR);
+  const [addStar] = useMutation<IAddStarOutput, IStarVariables>(ADD_STAR);
+  const [removeStar] = useMutation<IRemoveStarOutput, IStarVariables>(
+    REMOVE_STAR
+  );
   const [starCount, setStarCount] = useState(stargazerCount);
   const [isStarred, toggleIsStarred] = useState(false);
+  const mutationCalled = useRef(false);
   useEffect(() => {
-    if (starCount !== stargazerCount) {
-      console.log("Am i called");
+    if (starCount !== stargazerCount && !mutationCalled.current) {
       setStarCount(stargazerCount);
     }
+
+    mutationCalled.current = false;
   }, [stargazerCount, starCount]);
   const toggleOnClick = async () => {
     const prevStarred = isStarred;
+    mutationCalled.current = true;
+
+    const variables = {
+      input: { starrableId: id, clientMutationId: "aishwarya257" },
+    };
+
     if (!prevStarred) {
       const { data } = await addStar({
-        variables: { clientMutationId: "aishwarya257", starrableId: id }
+        variables,
       });
+
       if (data) {
         setStarCount(data.addStar.starrable.stargazerCount);
       }
     } else {
       const { data } = await removeStar({
-        variables: { clientMutationId: "aishwarya257", starrableId: id }
+        variables,
       });
+
       if (data) {
         setStarCount(data.removeStar.starrable.stargazerCount);
       }
     }
+
     toggleIsStarred((prevIsStarred) => !prevIsStarred);
   };
   return (
